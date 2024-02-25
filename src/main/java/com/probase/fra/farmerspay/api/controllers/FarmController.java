@@ -43,8 +43,59 @@ public class FarmController {
     private TokenProvider jwtTokenUtil;
 
 
+
+
     @ApiImplicitParam(name = "Authorization", required = true, paramType = "header", dataTypeClass = String.class, example = "Bearer <Token>")
-    @ApiOperation(value = "Add/Update new farm to farmer", response = ResponseEntity.class)
+    @ApiOperation(value = "Add new farm to farmer", response = ResponseEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful"),
+            @ApiResponse(code = 400, message = "Validation of request parameters failed"),
+            @ApiResponse(code = 403, message = "Access to API denied due to invalid token"),
+            @ApiResponse(code = 500, message = "Application failed to process the request")
+    })
+    @RequestMapping(value="/add-farm", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity addFarm(
+            @RequestBody @Valid NewFarmRequest newFarmRequest, BindingResult bindingResult,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+
+        User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
+
+        if (bindingResult.hasErrors()) {
+            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
+                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
+            }).collect(Collectors.toList());
+
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseData(errorMessageList);
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.VALIDATION_FAILED.label);
+            farmersPayResponse.setMessage("Validation of farmer form failed");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
+
+        Farm farm = new Farm();
+        farm.setCreatedAt(LocalDateTime.now());
+
+//        farm.setFarmCoordinates(newFarmRequest.getFarmCoordinates());
+        farm.setFarmName(newFarmRequest.getFarmName());
+        farm.setFarmStatus(FarmStatus.ACTIVE);
+        farm.setFarmDistrictId(newFarmRequest.getFarmDistrictId());
+        farm.setFarmProvinceId(newFarmRequest.getFarmProvinceId());
+        farm.setFarmAddress(newFarmRequest.getFarmAddress());
+        farm.setOwnedByUserId(authenticatedUser.getId());
+        farm.setUpdatedAt(LocalDateTime.now());
+
+        farm = farmService.save(farm);
+
+        FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+        farmersPayResponse.setResponseData(farm);
+        farmersPayResponse.setMessage("Your farm has been added successfully. You can add other farms if you have more than one farm");
+        return ResponseEntity.ok().body(farmersPayResponse);
+    }
+
+    @ApiImplicitParam(name = "Authorization", required = true, paramType = "header", dataTypeClass = String.class, example = "Bearer <Token>")
+    @ApiOperation(value = "Update farmers farm", response = ResponseEntity.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful"),
             @ApiResponse(code = 400, message = "Validation of request parameters failed"),
@@ -52,8 +103,8 @@ public class FarmController {
             @ApiResponse(code = 500, message = "Application failed to process the request")
     })
     @RequestMapping(value="/save-farm/{farmId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity saveFarm(
-                                    @PathVariable(required = false) Long farmId,
+    public ResponseEntity updateFarm(
+                                    @PathVariable(required = true) Long farmId,
                                     @RequestBody @Valid NewFarmRequest newFarmRequest, BindingResult bindingResult,
                                      HttpServletRequest request,
                                      HttpServletResponse response) throws Exception {
@@ -74,23 +125,15 @@ public class FarmController {
 
         Farm farm;
         String message = "";
-        if(farmId!=null && authenticatedUser.getUserRole().equals(UserRole.FARMER))
+        farm = farmService.getFarmById(farmId);
+        if(!(farm!=null && farm.getOwnedByUserId().equals(authenticatedUser.getId())))
         {
-            farm = farmService.getFarmById(farmId);
-            if(!(farm!=null && farm.getOwnedByUserId().equals(authenticatedUser.getId())))
-            {
-                FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
-                farmersPayResponse.setResponseCode(FarmersPayResponseCode.UNAUTHORIZED.label);
-                farmersPayResponse.setMessage("Permission not allowed to carry out this action");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(farmersPayResponse);
-            }
-            message = "Your farm has been updated successfully";
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.UNAUTHORIZED.label);
+            farmersPayResponse.setMessage("Permission not allowed to carry out this action");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(farmersPayResponse);
         }
-        else {
-            farm = new Farm();
-            farm.setCreatedAt(LocalDateTime.now());
-            message = "Your farm has been added successfully. You can add other farms if you have more than one farm";
-        }
+
 //        farm.setFarmCoordinates(newFarmRequest.getFarmCoordinates());
         farm.setFarmName(newFarmRequest.getFarmName());
         farm.setFarmStatus(FarmStatus.ACTIVE);
@@ -105,7 +148,7 @@ public class FarmController {
         FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
         farmersPayResponse.setResponseData(farm);
-        farmersPayResponse.setMessage(message);
+        farmersPayResponse.setMessage("Your farm has been updated successfully");
         return ResponseEntity.badRequest().body(farmersPayResponse);
     }
 
@@ -215,7 +258,7 @@ public class FarmController {
             return ResponseEntity.badRequest().body(farmersPayResponse);
         }*/
 
-        logger.info("xxxsss{}", listFarmsRequest.getDraw());
+
 
 
         Long userId = null;
