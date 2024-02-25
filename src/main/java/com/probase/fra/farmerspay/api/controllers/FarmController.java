@@ -4,10 +4,7 @@ package com.probase.fra.farmerspay.api.controllers;
 import com.probase.fra.farmerspay.api.enums.FarmStatus;
 import com.probase.fra.farmerspay.api.enums.FarmersPayResponseCode;
 import com.probase.fra.farmerspay.api.enums.UserRole;
-import com.probase.fra.farmerspay.api.models.ErrorMessage;
-import com.probase.fra.farmerspay.api.models.Farm;
-import com.probase.fra.farmerspay.api.models.FarmBankAccount;
-import com.probase.fra.farmerspay.api.models.User;
+import com.probase.fra.farmerspay.api.models.*;
 import com.probase.fra.farmerspay.api.models.requests.*;
 import com.probase.fra.farmerspay.api.models.responses.FarmersPayResponse;
 import com.probase.fra.farmerspay.api.providers.TokenProvider;
@@ -16,6 +13,8 @@ import io.swagger.annotations.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,7 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 @Api(produces = "application/json", description = "Farmer management")
 public class FarmController {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private FarmService farmService;
@@ -191,13 +193,17 @@ public class FarmController {
     public ResponseEntity getFarmList(
                                     @PathVariable Integer pageSize,
                                     @PathVariable Integer pageNumber,
-                                    BindingResult bindingResult,
+//                                    @RequestParam(required = false) String searchString,
+                                    ListFarmsRequest listFarmsRequest,
+                                    //BindingResult bindingResult,
                                      HttpServletRequest request,
                                      HttpServletResponse response) throws Exception {
 
+        logger.info("{}....{}", pageNumber, pageSize);
+
         User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
 
-        if (bindingResult.hasErrors()) {
+        /*if (bindingResult.hasErrors()) {
             List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
                 return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
             }).collect(Collectors.toList());
@@ -207,16 +213,18 @@ public class FarmController {
             farmersPayResponse.setResponseCode(FarmersPayResponseCode.VALIDATION_FAILED.label);
             farmersPayResponse.setMessage("Validation of farmer form failed");
             return ResponseEntity.badRequest().body(farmersPayResponse);
-        }
+        }*/
+
+        logger.info("xxxsss{}", listFarmsRequest.getDraw());
 
 
         Long userId = null;
-        List<Farm> farmList = new ArrayList<Farm>();
+        Map farmList = new HashMap();
 
         if(authenticatedUser.getUserRole().equals(UserRole.FARMER))
         {
             userId = authenticatedUser.getId();
-            farmList = farmService.getFarmsByUserId(userId, pageSize, pageNumber);
+            farmList = farmService.getFarmsByUserId(listFarmsRequest, userId, pageSize, pageNumber);
         }
         else {
             farmList = farmService.getAllFarms(pageSize, pageNumber);
@@ -228,7 +236,7 @@ public class FarmController {
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
         farmersPayResponse.setResponseData(farmList);
         farmersPayResponse.setMessage("Farm list fetched");
-        return ResponseEntity.badRequest().body(farmersPayResponse);
+        return ResponseEntity.ok().body(farmersPayResponse);
     }
 
 

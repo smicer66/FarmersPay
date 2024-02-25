@@ -28,7 +28,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Table(name = "users")
-@JsonIgnoreProperties(value = { "password" })
+@JsonIgnoreProperties(value = { "password", "hibernateLazyInitializer", "handler" })
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -66,7 +66,7 @@ public class UtilityController {
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
         farmersPayResponse.setResponseData(defaultData);
         farmersPayResponse.setMessage("Default data fetched");
-        return ResponseEntity.badRequest().body(farmersPayResponse);
+        return ResponseEntity.ok().body(farmersPayResponse);
     }
 
 

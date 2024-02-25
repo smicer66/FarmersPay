@@ -38,4 +38,9 @@ public class UserService {
         List<UserRolePermission> userRolePermissionList = userRepository.findRolePermissionByRole(roleName, pageable);
         return userRolePermissionList;
     }
+
+    public User getUserById(Long userId) {
+        User user = userRepository.getById(userId);
+        return  user;
+    }
 }

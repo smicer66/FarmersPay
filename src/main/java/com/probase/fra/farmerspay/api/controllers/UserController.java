@@ -19,10 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -80,6 +77,20 @@ public class UserController {
         farmersPayResponse.setResponseData(user);
         farmersPayResponse.setMessage("Your registration was successful. Please provide the OTP sent to your mobile number");
         return ResponseEntity.badRequest().body(farmersPayResponse);
+    }
+
+
+    @RequestMapping(value="/get-user-by-id/{userId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getUserById(@PathVariable Long userId){
+
+
+        User user = userService.getUserById(userId);
+
+        FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+        farmersPayResponse.setResponseData(user);
+        farmersPayResponse.setMessage("User fetched");
+        return ResponseEntity.ok().body(farmersPayResponse);
     }
 
 

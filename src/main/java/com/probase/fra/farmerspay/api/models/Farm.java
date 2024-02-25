@@ -1,8 +1,11 @@
 package com.probase.fra.farmerspay.api.models;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.probase.fra.farmerspay.api.converters.FarmerStatusConverter;
 import com.probase.fra.farmerspay.api.enums.FarmStatus;
 import javax.persistence.*;
+
+import com.probase.fra.farmerspay.api.serializer.JsonDateTimeSerializer;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,10 +32,13 @@ public class Farm implements Serializable {
     @Column(nullable= false)
     private Long farmProvinceId;
     @Column(nullable= false)
+    @JsonSerialize(using = JsonDateTimeSerializer.class)
     private LocalDateTime createdAt;
     @Column(nullable= true)
+    @JsonSerialize(using = JsonDateTimeSerializer.class)
     private LocalDateTime deletedAt;
     @Column(nullable= false)
+    @JsonSerialize(using = JsonDateTimeSerializer.class)
     private LocalDateTime updatedAt;
 
     @Column(nullable= false)

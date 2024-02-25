@@ -80,6 +80,11 @@ public class FarmersPayAuthenticationProvider implements AuthenticationProvider 
             logger.info("username ... {}", username);
             User user = userService.findByUsername(username);
 
+            if(user==null)
+            {
+                throw new FarmersPayAuthException("Invalid username/password combination. Please provide a valid username/password combination");
+            }
+
             logger.info("user id ... {}", user.getId());
             boolean matchedPin = BCrypt.checkpw(password, user.getPassword());
 
