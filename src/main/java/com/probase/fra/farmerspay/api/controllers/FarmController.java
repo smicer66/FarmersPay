@@ -90,7 +90,7 @@ public class FarmController {
         FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
         farmersPayResponse.setResponseData(farm);
-        farmersPayResponse.setMessage("Your farm has been added successfully. You can add other farms if you have more than one farm");
+        farmersPayResponse.setMessage("Your farm has been added successfully. You can later add other farms if you have more than one farm");
         return ResponseEntity.ok().body(farmersPayResponse);
     }
 
@@ -102,10 +102,9 @@ public class FarmController {
             @ApiResponse(code = 403, message = "Access to API denied due to invalid token"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     })
-    @RequestMapping(value="/save-farm/{farmId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value="/save-farm", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateFarm(
-                                    @PathVariable(required = true) Long farmId,
-                                    @RequestBody @Valid NewFarmRequest newFarmRequest, BindingResult bindingResult,
+                                    @RequestBody @Valid UpdateFarmRequest updateFarmRequest, BindingResult bindingResult,
                                      HttpServletRequest request,
                                      HttpServletResponse response) throws Exception {
 
@@ -125,7 +124,7 @@ public class FarmController {
 
         Farm farm;
         String message = "";
-        farm = farmService.getFarmById(farmId);
+        farm = farmService.getFarmById(updateFarmRequest.getFarmId());
         if(!(farm!=null && farm.getOwnedByUserId().equals(authenticatedUser.getId())))
         {
             FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
@@ -135,11 +134,11 @@ public class FarmController {
         }
 
 //        farm.setFarmCoordinates(newFarmRequest.getFarmCoordinates());
-        farm.setFarmName(newFarmRequest.getFarmName());
+        farm.setFarmName(updateFarmRequest.getFarmName());
         farm.setFarmStatus(FarmStatus.ACTIVE);
-        farm.setFarmDistrictId(newFarmRequest.getFarmDistrictId());
-        farm.setFarmProvinceId(newFarmRequest.getFarmProvinceId());
-        farm.setFarmAddress(newFarmRequest.getFarmAddress());
+        farm.setFarmDistrictId(updateFarmRequest.getFarmDistrictId());
+        farm.setFarmProvinceId(updateFarmRequest.getFarmProvinceId());
+        farm.setFarmAddress(updateFarmRequest.getFarmAddress());
         farm.setOwnedByUserId(authenticatedUser.getId());
         farm.setUpdatedAt(LocalDateTime.now());
 
@@ -294,7 +293,6 @@ public class FarmController {
     @RequestMapping(value="/get-farm/{farmId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getFarmList(
                                         @PathVariable(required = true) Long farmId,
-                                        BindingResult bindingResult,
                                       HttpServletRequest request,
                                       HttpServletResponse response) throws Exception {
 
@@ -303,13 +301,39 @@ public class FarmController {
 
         Farm farm = farmService.getFarmById(farmId);
 
-
-
+        if(farm==null)
+        {
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.NOT_FOUND.label);
+            farmersPayResponse.setResponseData(null);
+            farmersPayResponse.setMessage("Farm not found");
+            return  new ResponseEntity<FarmersPayResponse>(farmersPayResponse, HttpStatus.NOT_FOUND);
+        }
+        else if(farm!=null && authenticatedUser.getUserRole().equals(UserRole.FARMER) && farm.getOwnedByUserId().equals(authenticatedUser.getId()))
+        {
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+            farmersPayResponse.setResponseData(farm);
+            farmersPayResponse.setMessage("Farm details fetched");
+            return ResponseEntity.ok().body(farmersPayResponse);
+        }
+        else if(farm!=null && authenticatedUser.getUserRole().equals(UserRole.ADMINISTRATOR))
+        {
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+            farmersPayResponse.setResponseData(farm);
+            farmersPayResponse.setMessage("Farm details fetched");
+            return ResponseEntity.ok().body(farmersPayResponse);
+        }
         FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
-        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.UNAUTHORIZED.label);
         farmersPayResponse.setResponseData(farm);
-        farmersPayResponse.setMessage("Farm details fetched");
-        return ResponseEntity.badRequest().body(farmersPayResponse);
+        farmersPayResponse.setMessage("Access to this resource is denied");
+        return  new ResponseEntity<FarmersPayResponse>(farmersPayResponse, HttpStatus.UNAUTHORIZED);
+
+
+
+
     }
 
 

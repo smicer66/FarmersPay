@@ -1,5 +1,6 @@
 package com.probase.fra.farmerspay.api.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.probase.fra.farmerspay.api.converters.FarmerStatusConverter;
 import com.probase.fra.farmerspay.api.enums.FarmStatus;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(name = "farms")
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class Farm implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
