@@ -2,19 +2,12 @@ package com.probase.fra.farmerspay.api.repository;
 
 import com.probase.fra.farmerspay.api.models.Farm;
 import com.probase.fra.farmerspay.api.models.FarmDTO;
-import com.probase.fra.farmerspay.api.models.User;
-import com.probase.fra.farmerspay.api.models.requests.ListFarmsRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public interface FarmRepository extends JpaRepository<Farm, Long>
 {

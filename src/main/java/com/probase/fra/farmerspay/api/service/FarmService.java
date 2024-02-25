@@ -6,12 +6,11 @@ import com.probase.fra.farmerspay.api.models.FarmBankAccount;
 import com.probase.fra.farmerspay.api.models.FarmDTO;
 import com.probase.fra.farmerspay.api.models.User;
 import com.probase.fra.farmerspay.api.models.requests.AddFarmerBankAccountRequest;
-import com.probase.fra.farmerspay.api.models.requests.ListFarmsRequest;
+import com.probase.fra.farmerspay.api.models.requests.DataTablesRequest;
 import com.probase.fra.farmerspay.api.models.requests.UpdateFarmerBankAccountStatusRequest;
 import com.probase.fra.farmerspay.api.repository.FarmBankAccountRepository;
 import com.probase.fra.farmerspay.api.repository.FarmRepository;
 import com.probase.fra.farmerspay.api.repository.impl.FarmRepositoryImpl;
-import io.swagger.models.auth.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ public class FarmService {
         return farmRepository.save(farm);
     }
 
-    public Map getFarmsByUserId(ListFarmsRequest listFarmsRequest, Long userId, Integer pageSize, Integer pageNumber){
+    public Map getFarmsByUserId(DataTablesRequest listFarmsRequest, Long userId, Integer pageSize, Integer pageNumber){
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         List<FarmDTO> farmList = new ArrayList<FarmDTO>();
 

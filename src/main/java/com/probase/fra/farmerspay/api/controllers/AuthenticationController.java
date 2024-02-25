@@ -3,6 +3,7 @@ package com.probase.fra.farmerspay.api.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.probase.fra.farmerspay.api.enums.FarmersPayResponseCode;
+import com.probase.fra.farmerspay.api.enums.UserRole;
 import com.probase.fra.farmerspay.api.models.Farm;
 import com.probase.fra.farmerspay.api.models.FarmDTO;
 import com.probase.fra.farmerspay.api.models.User;
@@ -92,7 +93,11 @@ public class AuthenticationController {
             User loggedInUser = (User)authentication.getPrincipal();
 
 
-            Map farmList = farmService.getFarmsByUserId(null, loggedInUser.getId(), Integer.MAX_VALUE, 0);
+            Map farmList = new HashMap();
+
+            if(loggedInUser.getUserRole().equals(UserRole.FARMER))
+                farmList = farmService.getFarmsByUserId(null, loggedInUser.getId(), Integer.MAX_VALUE, 0);
+
             AuthenticateResponse authenticateResponse = new AuthenticateResponse();
             authenticateResponse.setToken(token);
             authenticateResponse.setUserRole(loggedInUser.getUserRole());

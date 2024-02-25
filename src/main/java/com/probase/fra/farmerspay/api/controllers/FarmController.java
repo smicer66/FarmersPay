@@ -254,7 +254,7 @@ public class FarmController {
                                     @PathVariable Integer pageSize,
                                     @PathVariable Integer pageNumber,
 //                                    @RequestParam(required = false) String searchString,
-                                    ListFarmsRequest listFarmsRequest,
+                                    DataTablesRequest listFarmsRequest,
                                     //BindingResult bindingResult,
                                      HttpServletRequest request,
                                      HttpServletResponse response) throws Exception {
