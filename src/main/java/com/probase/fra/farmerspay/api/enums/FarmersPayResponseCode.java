@@ -6,7 +6,7 @@ public enum FarmersPayResponseCode {
 
     public final String label;
 
-    private FarmersPayResponseCode(String label) {
+    FarmersPayResponseCode(String label) {
         this.label = label;
     }
 

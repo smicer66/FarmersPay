@@ -19,12 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.token.TokenService;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +33,7 @@ import java.util.stream.Collectors;
 @Api(produces = "application/json", description = "Farmer management")
 public class FarmController {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private FarmService farmService;
@@ -62,9 +60,7 @@ public class FarmController {
         User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
 
         if (bindingResult.hasErrors()) {
-            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
-                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
-            }).collect(Collectors.toList());
+            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> new ErrorMessage(fe.getField(), fe.getDefaultMessage())).collect(Collectors.toList());
 
             FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
             farmersPayResponse.setResponseData(errorMessageList);
@@ -111,9 +107,7 @@ public class FarmController {
         User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
 
         if (bindingResult.hasErrors()) {
-            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
-                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
-            }).collect(Collectors.toList());
+            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> new ErrorMessage(fe.getField(), fe.getDefaultMessage())).collect(Collectors.toList());
 
             FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
             farmersPayResponse.setResponseData(errorMessageList);
@@ -122,9 +116,7 @@ public class FarmController {
             return ResponseEntity.badRequest().body(farmersPayResponse);
         }
 
-        Farm farm;
-        String message = "";
-        farm = farmService.getFarmById(updateFarmRequest.getFarmId());
+        Farm farm = farmService.getFarmById(updateFarmRequest.getFarmId());
         if(!(farm!=null && farm.getOwnedByUserId().equals(authenticatedUser.getId())))
         {
             FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
@@ -169,9 +161,7 @@ public class FarmController {
         User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
 
         if (bindingResult.hasErrors()) {
-            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
-                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
-            }).collect(Collectors.toList());
+            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> new ErrorMessage(fe.getField(), fe.getDefaultMessage())).collect(Collectors.toList());
 
             FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
             farmersPayResponse.setResponseData(errorMessageList);
@@ -203,23 +193,51 @@ public class FarmController {
     })
     @RequestMapping(value="/delete-farm/{farmId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity deleteFarm(
-            @PathVariable(required = true) Long farmId,
-            BindingResult bindingResult,
+            @PathVariable Long farmId,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
         User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
-
-
         Farm farm = farmService.getFarmById(farmId);
-        farm.setDeletedAt(LocalDateTime.now());
-        farm = farmService.save(farm);
 
+        if(farm==null)
+        {
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.NOT_FOUND.label);
+            farmersPayResponse.setResponseData(null);
+            farmersPayResponse.setMessage("Farm not found");
+            return  new ResponseEntity<FarmersPayResponse>(farmersPayResponse, HttpStatus.NOT_FOUND);
+        }
+        else if(farm!=null && authenticatedUser.getUserRole().equals(UserRole.FARMER) && farm.getOwnedByUserId().equals(authenticatedUser.getId()))
+        {
+
+            farm.setDeletedAt(LocalDateTime.now());
+            farm = farmService.save(farm);
+
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+            farmersPayResponse.setResponseData(farm);
+            farmersPayResponse.setMessage("Farm deleted successfully");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
+        else if(farm!=null && authenticatedUser.getUserRole().equals(UserRole.ADMINISTRATOR))
+        {
+            farm.setDeletedAt(LocalDateTime.now());
+            farm = farmService.save(farm);
+
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+            farmersPayResponse.setResponseData(farm);
+            farmersPayResponse.setMessage("Farm deleted successfully");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
         FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
-        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
-        farmersPayResponse.setResponseData(farm);
-        farmersPayResponse.setMessage("Farm deleted successfully");
-        return ResponseEntity.badRequest().body(farmersPayResponse);
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.UNAUTHORIZED.label);
+        farmersPayResponse.setResponseData(null);
+        farmersPayResponse.setMessage("Access to this resource is denied");
+        return  new ResponseEntity<FarmersPayResponse>(farmersPayResponse, HttpStatus.UNAUTHORIZED);
+
+
     }
 
 
@@ -327,7 +345,7 @@ public class FarmController {
         }
         FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.UNAUTHORIZED.label);
-        farmersPayResponse.setResponseData(farm);
+        farmersPayResponse.setResponseData(null);
         farmersPayResponse.setMessage("Access to this resource is denied");
         return  new ResponseEntity<FarmersPayResponse>(farmersPayResponse, HttpStatus.UNAUTHORIZED);
 
