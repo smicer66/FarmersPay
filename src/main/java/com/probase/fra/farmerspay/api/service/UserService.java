@@ -49,16 +49,21 @@ public class UserService {
         return  user;
     }
 
-    public Map getAllUserTypes(DataTablesRequest listFarmsRequest, Integer pageSize, Integer pageNumber) {
+    public User getUserByUsername(String username) {
+        User user = userRepository.getUserByUsername(username);
+        return  user;
+    }
+
+    public Map getAllUserTypes(DataTablesRequest dataTableRequest, Integer pageSize, Integer pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         List<UserType> userTypeList = new ArrayList<UserType>();
 
 
-//        logger.info("xxx {}", listFarmsRequest.getDraw());
-        if(listFarmsRequest!=null && listFarmsRequest.getSearch()!=null && listFarmsRequest.getSearch().containsKey("value")) {
-            logger.info("xxx {}", listFarmsRequest.getDraw());
-            logger.info("xxx {}", listFarmsRequest.getSearch());
-            String searchStringLike = "%".concat(listFarmsRequest.getSearch().get("value")).concat("%");
+//        logger.info("xxx {}", dataTableRequest.getDraw());
+        if(dataTableRequest!=null && dataTableRequest.getSearch()!=null && dataTableRequest.getSearch().containsKey("value")) {
+            logger.info("xxx {}", dataTableRequest.getDraw());
+            logger.info("xxx {}", dataTableRequest.getSearch());
+            String searchStringLike = "%".concat(dataTableRequest.getSearch().get("value")).concat("%");
             userTypeList = userRepository.filterUserTypes(searchStringLike, searchStringLike, pageable);
         }
         else {
@@ -67,9 +72,9 @@ public class UserService {
 
 
         List<Integer> count = new ArrayList<Integer>();
-        if(listFarmsRequest!=null && listFarmsRequest.getSearch()!=null && listFarmsRequest.getSearch().containsKey("value")) {
+        if(dataTableRequest!=null && dataTableRequest.getSearch()!=null && dataTableRequest.getSearch().containsKey("value")) {
 
-            String searchStringLike = "%".concat(listFarmsRequest.getSearch().get("value")).concat("%");
+            String searchStringLike = "%".concat(dataTableRequest.getSearch().get("value")).concat("%");
             count = userRepository.filterUserTypesCount(searchStringLike, searchStringLike);
         }
         else {
@@ -81,6 +86,43 @@ public class UserService {
 
         Map map = new HashMap<>();
         map.put("userTypeList", userTypeList);
+        map.put("count", count);
+
+        return map;
+    }
+
+
+
+    public Map getAllUsers(DataTablesRequest dataTableRequest, Integer pageSize, Integer pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        List<User> userList = new ArrayList<User>();
+
+
+//        logger.info("xxx {}", dataTableRequest.getDraw());
+        if(dataTableRequest!=null && dataTableRequest.getSearch()!=null && dataTableRequest.getSearch().containsKey("value")) {
+            String searchStringLike = "%".concat(dataTableRequest.getSearch().get("value")).concat("%");
+            userList = userRepository.filterUsers(searchStringLike, searchStringLike, searchStringLike, searchStringLike, searchStringLike, searchStringLike, pageable);
+        }
+        else {
+            userList = userRepository.findUsers(pageable);
+        }
+
+
+        List<Integer> count = new ArrayList<Integer>();
+        if(dataTableRequest!=null && dataTableRequest.getSearch()!=null && dataTableRequest.getSearch().containsKey("value")) {
+
+            String searchStringLike = "%".concat(dataTableRequest.getSearch().get("value")).concat("%");
+            count = userRepository.filterUsersCount(searchStringLike, searchStringLike, searchStringLike, searchStringLike, searchStringLike, searchStringLike);
+        }
+        else {
+            count = userRepository.findUsersCount();
+        }
+
+
+        logger.info("{}", count);
+
+        Map map = new HashMap<>();
+        map.put("userList", userList);
         map.put("count", count);
 
         return map;

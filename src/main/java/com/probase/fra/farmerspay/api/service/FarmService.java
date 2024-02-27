@@ -42,16 +42,16 @@ public class FarmService {
         return farmRepository.save(farm);
     }
 
-    public Map getFarmsByUserId(DataTablesRequest listFarmsRequest, Long userId, Integer pageSize, Integer pageNumber){
+    public Map getFarmsByUserId(DataTablesRequest dataTableRequest, Long userId, Integer pageSize, Integer pageNumber){
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         List<FarmDTO> farmList = new ArrayList<FarmDTO>();
 
 
-//        logger.info("xxx {}", listFarmsRequest.getDraw());
-        if(listFarmsRequest!=null && listFarmsRequest.getSearch()!=null && listFarmsRequest.getSearch().containsKey("value")) {
-            logger.info("xxx {}", listFarmsRequest.getDraw());
-            logger.info("xxx {}", listFarmsRequest.getSearch());
-            String searchStringLike = "%".concat(listFarmsRequest.getSearch().get("value")).concat("%");
+//        logger.info("xxx {}", dataTableRequest.getDraw());
+        if(dataTableRequest!=null && dataTableRequest.getSearch()!=null && dataTableRequest.getSearch().containsKey("value")) {
+            logger.info("xxx {}", dataTableRequest.getDraw());
+            logger.info("xxx {}", dataTableRequest.getSearch());
+            String searchStringLike = "%".concat(dataTableRequest.getSearch().get("value")).concat("%");
             farmList = farmRepository.filterFarmsByUserId(userId, searchStringLike, searchStringLike, searchStringLike, searchStringLike, pageable);
         }
         else {
@@ -60,9 +60,9 @@ public class FarmService {
 
 
         List<Integer> count = new ArrayList<Integer>();
-        if(listFarmsRequest!=null && listFarmsRequest.getSearch()!=null && listFarmsRequest.getSearch().containsKey("value")) {
+        if(dataTableRequest!=null && dataTableRequest.getSearch()!=null && dataTableRequest.getSearch().containsKey("value")) {
 
-            String searchStringLike = "%".concat(listFarmsRequest.getSearch().get("value")).concat("%");
+            String searchStringLike = "%".concat(dataTableRequest.getSearch().get("value")).concat("%");
             count = farmRepository.findFarmsCountByUserId(userId, searchStringLike, searchStringLike, searchStringLike, searchStringLike);
         }
         else {

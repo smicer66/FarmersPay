@@ -8,6 +8,7 @@ import com.probase.fra.farmerspay.api.models.requests.NewFarmRequest;
 import com.probase.fra.farmerspay.api.models.responses.FarmersPayResponse;
 import com.probase.fra.farmerspay.api.providers.TokenProvider;
 import com.probase.fra.farmerspay.api.service.FarmService;
+import com.probase.fra.farmerspay.api.service.UserTypeService;
 import com.probase.fra.farmerspay.api.service.UtilityService;
 import io.swagger.annotations.*;
 import jakarta.validation.Valid;
@@ -36,6 +37,8 @@ public class UtilityController {
     @Autowired
     private UtilityService utilityService;
     @Autowired
+    private UserTypeService userTypeService;
+    @Autowired
     private TokenProvider jwtTokenUtil;
 
 
@@ -56,11 +59,13 @@ public class UtilityController {
 
         List<District> districtList = utilityService.fetchDistricts();
         List<Province> provinceList = utilityService.fetchProvinces();
+        List<UserType> userTypeList = userTypeService.getAllUserTypes();
 
 
         Map<String, List> defaultData = new HashMap<String, List>();
         defaultData.put("provinceList", provinceList);
         defaultData.put("districtList", districtList);
+        defaultData.put("userTypeList", userTypeList);
 
         FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);

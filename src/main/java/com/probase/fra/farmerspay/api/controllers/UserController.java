@@ -9,9 +9,7 @@ import com.probase.fra.farmerspay.api.exceptions.FarmersPayAuthException;
 import com.probase.fra.farmerspay.api.models.ErrorMessage;
 import com.probase.fra.farmerspay.api.models.User;
 import com.probase.fra.farmerspay.api.models.UserType;
-import com.probase.fra.farmerspay.api.models.requests.AddUserTypeRequest;
-import com.probase.fra.farmerspay.api.models.requests.DataTablesRequest;
-import com.probase.fra.farmerspay.api.models.requests.RegisterRequest;
+import com.probase.fra.farmerspay.api.models.requests.*;
 import com.probase.fra.farmerspay.api.models.responses.FarmersPayResponse;
 import com.probase.fra.farmerspay.api.providers.TokenProvider;
 import com.probase.fra.farmerspay.api.service.UserService;
@@ -96,6 +94,65 @@ public class UserController {
     }
 
 
+    @RequestMapping(value="/create-new-administrator", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity createNewAdministrator(@RequestBody @Valid NewAdministratorRequest newAdministratorRequest, BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
+                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
+            }).collect(Collectors.toList());
+
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseData(errorMessageList);
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.VALIDATION_FAILED.label);
+            farmersPayResponse.setMessage("Validation of the form failed");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
+
+        User user = userService.getUserByUsername(newAdministratorRequest.getEmailAddress());
+        if(user!=null)
+        {
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseData(null);
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.USERNAME_EXISTS.label);
+            farmersPayResponse.setMessage("The email address provided belongs to another user.");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
+
+        String password = RandomStringUtils.randomAlphanumeric(8);
+        logger.info("password ... {}", password);
+        String bcryptPassword = UtilityHelper.generateBCryptPassword(password);
+        String otp = RandomStringUtils.randomNumeric(6);
+
+        user = new User();
+//        user.setCreatedAt(LocalDateTime.now());
+//        user.setUpdatedAt(LocalDateTime.now());
+
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setFirstName(newAdministratorRequest.getFirstName());
+        user.setLastName(newAdministratorRequest.getLastName());
+        user.setOtherNames(newAdministratorRequest.getOtherName());
+        user.setUserRole(UserRole.ADMINISTRATOR);
+        user.setGender(newAdministratorRequest.getGender());
+        user.setUserStatus(UserStatus.NOT_ACTIVATED);
+        user.setPassword(bcryptPassword);
+        user.setDateOfBirth(newAdministratorRequest.getDateOfBirth());
+        user.setMobileNumber(newAdministratorRequest.getMobileNumber());
+        user.setUsername(newAdministratorRequest.getEmailAddress());
+        user.setOtp(otp);
+        user.setUserTypeId(newAdministratorRequest.getUserTypeId());
+
+        user = userService.save(user);
+
+        FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+        farmersPayResponse.setResponseData(user);
+        farmersPayResponse.setMessage("Administrator profile created successfully. A One-Time Code and credentials have been sent to the administrator. Your new administrator " +
+                "is required to use the One-Time code to activate their profile");
+        return ResponseEntity.ok().body(farmersPayResponse);
+    }
+
+
     @RequestMapping(value="/get-user-by-id/{userId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getUserById(@PathVariable Long userId){
 
@@ -111,23 +168,20 @@ public class UserController {
 
 
 
-
-
-
     @ApiImplicitParam(name = "Authorization", required = true, paramType = "header", dataTypeClass = String.class, example = "Bearer <Token>")
-    @ApiOperation(value = "List User Types", response = ResponseEntity.class)
+    @ApiOperation(value = "List Users", response = ResponseEntity.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful"),
             @ApiResponse(code = 400, message = "Validation of request parameters failed"),
             @ApiResponse(code = 403, message = "Access to API denied due to invalid token"),
             @ApiResponse(code = 500, message = "Application failed to process the request")
     })
-    @RequestMapping(value="/list-user-types/{pageSize}/{pageNumber}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getFarmList(
+    @RequestMapping(value="/list-users/{pageSize}/{pageNumber}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getUsers(
             @PathVariable Integer pageSize,
             @PathVariable Integer pageNumber,
 //                                    @RequestParam(required = false) String searchString,
-            DataTablesRequest listFarmsRequest,
+            DataTablesRequest dataTableRequest,
             //BindingResult bindingResult,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception {
@@ -139,7 +193,44 @@ public class UserController {
 
 
 
-        Map userTypesList = userService.getAllUserTypes(listFarmsRequest, pageSize, pageNumber);
+        Map usersList = userService.getAllUsers(dataTableRequest, pageSize, pageNumber);
+
+
+
+        FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+        farmersPayResponse.setResponseData(usersList);
+        farmersPayResponse.setMessage("User list fetched");
+        return ResponseEntity.ok().body(farmersPayResponse);
+    }
+
+
+    @ApiImplicitParam(name = "Authorization", required = true, paramType = "header", dataTypeClass = String.class, example = "Bearer <Token>")
+    @ApiOperation(value = "List User Types", response = ResponseEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful"),
+            @ApiResponse(code = 400, message = "Validation of request parameters failed"),
+            @ApiResponse(code = 403, message = "Access to API denied due to invalid token"),
+            @ApiResponse(code = 500, message = "Application failed to process the request")
+    })
+    @RequestMapping(value="/list-user-types/{pageSize}/{pageNumber}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getUserTypes(
+            @PathVariable Integer pageSize,
+            @PathVariable Integer pageNumber,
+//                                    @RequestParam(required = false) String searchString,
+            DataTablesRequest dataTableRequest,
+            //BindingResult bindingResult,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+
+        logger.info("{}....{}", pageNumber, pageSize);
+
+        User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
+
+
+
+
+        Map userTypesList = userService.getAllUserTypes(dataTableRequest, pageSize, pageNumber);
 
 
 
@@ -209,6 +300,63 @@ public class UserController {
         farmersPayResponse.setResponseCode(FarmersPayResponseCode.GENERAL_ERROR.label);
         farmersPayResponse.setResponseData(null);
         farmersPayResponse.setMessage("None of the user types provided has been created. Confirm the user types provided do not already exist");
+        return ResponseEntity.badRequest().body(farmersPayResponse);
+
+
+    }
+
+
+
+
+
+    @ApiImplicitParam(name = "Authorization", required = true, paramType = "header", dataTypeClass = String.class, example = "Bearer <Token>")
+    @ApiOperation(value = "Update user status", response = ResponseEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful"),
+            @ApiResponse(code = 400, message = "Validation of request parameters failed"),
+            @ApiResponse(code = 403, message = "Access to API denied due to invalid token"),
+            @ApiResponse(code = 500, message = "Application failed to process the request")
+    })
+    @RequestMapping(value="/update-user-status", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity updateUserStatus(@RequestBody @Valid UpdateUserStatusRequest updateUserStatusRequest, BindingResult bindingResult,
+                                           HttpServletRequest request,
+                                           HttpServletResponse response) throws FarmersPayAuthException, JsonProcessingException {
+        if (bindingResult.hasErrors()) {
+            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
+                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
+            }).collect(Collectors.toList());
+
+            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+            farmersPayResponse.setResponseData(errorMessageList);
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.VALIDATION_FAILED.label);
+            farmersPayResponse.setMessage("Validation of registration form failed");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
+
+        User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
+
+        User userSelected = userService.getUserById(updateUserStatusRequest.getUserId());
+        FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+        if(userSelected!=null &&
+                userSelected.getId()!=authenticatedUser.getId())
+        {
+            UserStatus userStatus = UserStatus.valueOf(updateUserStatusRequest.getStatus());
+            userSelected.setUserStatus(userStatus);
+            if(userStatus.equals(UserStatus.DELETED))
+            {
+                userSelected.setDeletedAt(LocalDateTime.now());
+            }
+            userService.save(userSelected);
+
+            farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+            farmersPayResponse.setResponseData(null);
+            farmersPayResponse.setMessage("Selected user's status updated successfully");
+            return ResponseEntity.badRequest().body(farmersPayResponse);
+        }
+
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.GENERAL_ERROR.label);
+        farmersPayResponse.setResponseData(null);
+        farmersPayResponse.setMessage("Selected user's status could not be updated successfully");
         return ResponseEntity.badRequest().body(farmersPayResponse);
 
 

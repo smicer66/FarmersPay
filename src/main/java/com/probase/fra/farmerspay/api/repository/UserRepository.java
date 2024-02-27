@@ -33,4 +33,34 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u.id) as count FROM UserType u WHERE u.deletedAt IS NULL AND " +
             "(u.userType LIKE :searchStringLike OR u.createdByFullName LIKE :searchStringLike1)")
     List<Integer> filterUserTypesCount(String searchStringLike, String searchStringLike1);
+
+
+
+    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL")
+    List<User> findUsers(Pageable pageable);
+
+
+
+    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +
+            "(u.firstName LIKE :searchStringLike OR u.lastName LIKE :searchStringLike1 OR " +
+            "u.otherNames LIKE :searchStringLike2 OR u.userRole LIKE :searchStringLike3 OR " +
+            "u.userStatus LIKE :searchStringLike4 OR u.mobileNumber LIKE :searchStringLike5) ORDER BY id ASC")
+    List<User> filterUsers(String searchStringLike, String searchStringLike1, String searchStringLike2, String searchStringLike3, String searchStringLike4, String searchStringLike5, Pageable pageable);
+
+
+
+    @Query("SELECT COUNT(u.id) as count FROM User u WHERE u.deletedAt IS NULL AND " +
+            "(u.firstName LIKE :searchStringLike OR u.lastName LIKE :searchStringLike1 OR " +
+            "u.otherNames LIKE :searchStringLike2 OR u.userRole LIKE :searchStringLike3 OR " +
+            "u.userStatus LIKE :searchStringLike4 OR u.mobileNumber LIKE :searchStringLike5)")
+    List<Integer> filterUsersCount(String searchStringLike, String searchStringLike1, String searchStringLike2, String searchStringLike3, String searchStringLike4, String searchStringLike5);
+
+
+
+    @Query("SELECT COUNT(u.id) as count FROM User u WHERE u.deletedAt IS NULL")
+    List<Integer> findUsersCount();
+
+
+    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND u.username = :username")
+    User getUserByUsername(String username);
 }

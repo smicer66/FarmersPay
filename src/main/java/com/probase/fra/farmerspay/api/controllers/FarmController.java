@@ -254,7 +254,7 @@ public class FarmController {
                                     @PathVariable Integer pageSize,
                                     @PathVariable Integer pageNumber,
 //                                    @RequestParam(required = false) String searchString,
-                                    DataTablesRequest listFarmsRequest,
+                                    DataTablesRequest dataTableRequest,
                                     //BindingResult bindingResult,
                                      HttpServletRequest request,
                                      HttpServletResponse response) throws Exception {
@@ -284,7 +284,7 @@ public class FarmController {
         if(authenticatedUser.getUserRole().equals(UserRole.FARMER))
         {
             userId = authenticatedUser.getId();
-            farmList = farmService.getFarmsByUserId(listFarmsRequest, userId, pageSize, pageNumber);
+            farmList = farmService.getFarmsByUserId(dataTableRequest, userId, pageSize, pageNumber);
         }
         else {
             farmList = farmService.getAllFarms(pageSize, pageNumber);

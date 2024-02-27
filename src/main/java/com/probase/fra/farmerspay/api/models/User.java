@@ -79,6 +79,8 @@ public class User implements Serializable {
 //    @Convert(converter = UserStatusConverter.class)
     private UserStatus userStatus;
 
+    @Column(nullable= true)
+    private Long userTypeId;
 
 
 }

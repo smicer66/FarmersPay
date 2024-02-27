@@ -36,9 +36,9 @@ public interface FarmRepository extends JpaRepository<Farm, Long>
             "")
     List<Integer> findFarmsCountByUserId(@Param("userId") Long userId, @Param("farmName") String farmName, @Param("farmAddress") String farmAddress, @Param("districtName") String districtName, @Param("provinceName") String provinceName);
 
-    @Query("SELECT f, p.provinceName, d.districtName FROM Farm f, Province p, District d WHERE f.farmProvinceId = p.id AND f.farmDistrictId = d.id AND f.deletedAt IS NULL ORDER by f.id DESC")
+    @Query("SELECT new com.probase.fra.farmerspay.api.models.FarmDTO(f, p.provinceName, d.districtName) FROM Farm f, Province p, District d WHERE f.farmProvinceId = p.id AND f.farmDistrictId = d.id AND f.deletedAt IS NULL")
     List<FarmDTO> findAllFarms(Pageable pageable);
 
-    @Query("SELECT COUNT(*) as c FROM Farm f WHERE f.deletedAt IS NULL ORDER by f.id DESC")
+    @Query("SELECT COUNT(*) as c FROM Farm f WHERE f.deletedAt IS NULL")
     List<Integer> findAllFarmsCount();
 }

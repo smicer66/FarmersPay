@@ -75,7 +75,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             PrintWriter out = response.getWriter();
             response.setContentType("application/json");
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
 //            response.getWriter().write(new ObjectMapper().writeValueAsString(payAccessResponse));
             out.print(new ObjectMapper().writeValueAsString(payAccessResponse));
             out.flush();

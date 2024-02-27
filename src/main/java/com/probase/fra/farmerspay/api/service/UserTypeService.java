@@ -36,4 +36,8 @@ public class UserTypeService {
     public UserType getUserTypeByName(String userTypeName) {
         return userTypeRepository.getUserTypeByName(userTypeName);
     }
+
+    public List<UserType> getAllUserTypes() {
+        return userTypeRepository.getAll();
+    }
 }

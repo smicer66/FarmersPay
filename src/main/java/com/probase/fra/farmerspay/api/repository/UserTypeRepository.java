@@ -31,4 +31,8 @@ public interface UserTypeRepository extends JpaRepository<UserType, Long> {
 
     @Query("SELECT u FROM UserType u WHERE u.deletedAt IS NULL AND u.userType = :userTypeName")
     UserType getUserTypeByName(String userTypeName);
+
+
+    @Query("SELECT u FROM UserType u WHERE u.deletedAt IS NULL")
+    List<UserType> getAll();
 }
