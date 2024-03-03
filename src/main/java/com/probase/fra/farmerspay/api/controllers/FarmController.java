@@ -263,18 +263,6 @@ public class FarmController {
 
         User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
 
-        /*if (bindingResult.hasErrors()) {
-            List errorMessageList =  bindingResult.getFieldErrors().stream().map(fe -> {
-                return new ErrorMessage(fe.getField(), fe.getDefaultMessage());
-            }).collect(Collectors.toList());
-
-            FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
-            farmersPayResponse.setResponseData(errorMessageList);
-            farmersPayResponse.setResponseCode(FarmersPayResponseCode.VALIDATION_FAILED.label);
-            farmersPayResponse.setMessage("Validation of farmer form failed");
-            return ResponseEntity.badRequest().body(farmersPayResponse);
-        }*/
-
 
 
 
@@ -534,6 +522,43 @@ public class FarmController {
 
 
 
+
+    @ApiImplicitParam(name = "Authorization", required = true, paramType = "header", dataTypeClass = String.class, example = "Bearer <Token>")
+    @ApiOperation(value = "List Farm Groups", response = ResponseEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful"),
+            @ApiResponse(code = 400, message = "Validation of request parameters failed"),
+            @ApiResponse(code = 403, message = "Access to API denied due to invalid token"),
+            @ApiResponse(code = 500, message = "Application failed to process the request")
+    })
+    @RequestMapping(value="/list-farm-groups/{pageSize}/{pageNumber}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getFarmGroupList(
+            @PathVariable Integer pageSize,
+            @PathVariable Integer pageNumber,
+            DataTablesRequest dataTableRequest,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+
+        logger.info("{}....{}", pageNumber, pageSize);
+
+        User authenticatedUser = jwtTokenUtil.getUserFromToken(request);
+
+
+
+
+        Long userId = null;
+        Map farmGroupList = new HashMap();
+
+        farmGroupList = farmService.getAllFarmGroups(pageSize, pageNumber);
+
+
+
+        FarmersPayResponse farmersPayResponse = new FarmersPayResponse();
+        farmersPayResponse.setResponseCode(FarmersPayResponseCode.SUCCESS.label);
+        farmersPayResponse.setResponseData(farmGroupList);
+        farmersPayResponse.setMessage("Farm group list fetched");
+        return ResponseEntity.ok().body(farmersPayResponse);
+    }
 
 
 }

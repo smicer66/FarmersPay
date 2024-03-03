@@ -2,6 +2,7 @@ package com.probase.fra.farmerspay.api.repository;
 
 import com.probase.fra.farmerspay.api.enums.UserRole;
 import com.probase.fra.farmerspay.api.models.User;
+import com.probase.fra.farmerspay.api.models.UserDTO;
 import com.probase.fra.farmerspay.api.models.UserRolePermission;
 import com.probase.fra.farmerspay.api.models.UserType;
 import org.springframework.data.domain.Pageable;
@@ -36,16 +37,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
 
-    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL")
-    List<User> findUsers(Pageable pageable);
+    @Query("SELECT new com.probase.fra.farmerspay.api.models.UserDTO(u, ut.userType) FROM User u LEFT JOIN UserType ut on u.userTypeId = ut.id WHERE u.deletedAt IS NULL")
+    List<UserDTO> findUsers(Pageable pageable);
 
 
 
-    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +
+    @Query("SELECT new com.probase.fra.farmerspay.api.models.UserDTO(u, ut.userType) FROM User u LEFT JOIN UserType ut on u.userTypeId = ut.id WHERE u.deletedAt IS NULL AND " +
             "(u.firstName LIKE :searchStringLike OR u.lastName LIKE :searchStringLike1 OR " +
             "u.otherNames LIKE :searchStringLike2 OR u.userRole LIKE :searchStringLike3 OR " +
             "u.userStatus LIKE :searchStringLike4 OR u.mobileNumber LIKE :searchStringLike5) ORDER BY id ASC")
-    List<User> filterUsers(String searchStringLike, String searchStringLike1, String searchStringLike2, String searchStringLike3, String searchStringLike4, String searchStringLike5, Pageable pageable);
+    List<UserDTO> filterUsers(String searchStringLike, String searchStringLike1, String searchStringLike2, String searchStringLike3, String searchStringLike4, String searchStringLike5, Pageable pageable);
 
 
 

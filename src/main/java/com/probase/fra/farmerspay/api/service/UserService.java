@@ -1,10 +1,7 @@
 package com.probase.fra.farmerspay.api.service;
 
 import com.probase.fra.farmerspay.api.enums.UserRole;
-import com.probase.fra.farmerspay.api.models.FarmDTO;
-import com.probase.fra.farmerspay.api.models.User;
-import com.probase.fra.farmerspay.api.models.UserRolePermission;
-import com.probase.fra.farmerspay.api.models.UserType;
+import com.probase.fra.farmerspay.api.models.*;
 import com.probase.fra.farmerspay.api.models.requests.DataTablesRequest;
 import com.probase.fra.farmerspay.api.repository.UserRepository;
 import org.slf4j.Logger;
@@ -95,7 +92,7 @@ public class UserService {
 
     public Map getAllUsers(DataTablesRequest dataTableRequest, Integer pageSize, Integer pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        List<User> userList = new ArrayList<User>();
+        List<UserDTO> userList = new ArrayList<UserDTO>();
 
 
 //        logger.info("xxx {}", dataTableRequest.getDraw());

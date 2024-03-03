@@ -71,7 +71,14 @@ public enum Permission {
 
     UPDATE_USER_STATUS("Update status of registered users"),
 
-    RUN_SETTLEMENT("Run settlement");
+    RUN_SETTLEMENT("Run settlement"),
+
+    APPROVE_PAYMENT_SCHEDULE("Approve Payment Schedule"),
+
+    APPROVE_FARM("Approve Farm"),
+    DISAPPROVE_FARM("Disapprove Farm"),
+
+    DISAPPROVE_PAYMENT_SCHEDULE("Disapprove Payment Schedule");
 
     public final String value;
 

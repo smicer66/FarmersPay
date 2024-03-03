@@ -2,6 +2,7 @@ package com.probase.fra.farmerspay.api.repository;
 
 import com.probase.fra.farmerspay.api.models.Farm;
 import com.probase.fra.farmerspay.api.models.FarmDTO;
+import com.probase.fra.farmerspay.api.models.FarmGroup;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -41,4 +42,13 @@ public interface FarmRepository extends JpaRepository<Farm, Long>
 
     @Query("SELECT COUNT(*) as c FROM Farm f WHERE f.deletedAt IS NULL")
     List<Integer> findAllFarmsCount();
+
+    @Query("SELECT f FROM FarmGroup f WHERE f.deletedAt IS NULL")
+    List<FarmGroup> findAllFarmGroups(Pageable pageable);
+
+    @Query("SELECT COUNT(*) as c FROM FarmGroup f WHERE f.deletedAt IS NULL")
+    List<Integer> findAllFarmGroupsCount();
+
+    @Query("SELECT fg FROM FarmGroup fg WHERE fg.id = :farmGroupId AND fg.deletedAt IS NULL")
+    FarmGroup findFarmGroupById(Long farmGroupId);
 }

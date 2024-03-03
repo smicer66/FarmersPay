@@ -1,10 +1,7 @@
 package com.probase.fra.farmerspay.api.service;
 
 import com.probase.fra.farmerspay.api.enums.FarmBankAccountStatus;
-import com.probase.fra.farmerspay.api.models.Farm;
-import com.probase.fra.farmerspay.api.models.FarmBankAccount;
-import com.probase.fra.farmerspay.api.models.FarmDTO;
-import com.probase.fra.farmerspay.api.models.User;
+import com.probase.fra.farmerspay.api.models.*;
 import com.probase.fra.farmerspay.api.models.requests.AddFarmerBankAccountRequest;
 import com.probase.fra.farmerspay.api.models.requests.DataTablesRequest;
 import com.probase.fra.farmerspay.api.models.requests.UpdateFarmerBankAccountStatusRequest;
@@ -150,5 +147,26 @@ public class FarmService {
 
         farmBankAccount.setDeletedAt(LocalDateTime.now());
         farmBankAccountRepository.save(farmBankAccount);
+    }
+
+    public Map getAllFarmGroups(Integer pageSize, Integer pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        List<FarmGroup> farmGroupList = farmRepository.findAllFarmGroups(pageable);
+        List<Integer> count = farmRepository.findAllFarmGroupsCount();
+        logger.info("{}", count);
+
+        Map map = new HashMap<>();
+        map.put("farmGroupList", farmGroupList);
+        map.put("count", count);
+
+        return map;
+    }
+
+    public FarmGroup getFarmGroupById(Long farmGroupId) {
+        FarmGroup farmGroup = farmRepository.findFarmGroupById(farmGroupId);
+        logger.info("{}", farmGroup);
+
+
+        return farmGroup;
     }
 }

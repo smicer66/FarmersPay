@@ -66,6 +66,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         catch(ExpiredJwtException e)
         {
+            e.printStackTrace();
             logger.info("Exception occured");
             Map<String, String> errors = new HashMap<>();
             FarmersPayResponse payAccessResponse = new FarmersPayResponse();
@@ -87,6 +88,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         {
             e.printStackTrace();
             logger.info("Exception occured");
+            logger.error(e);
             Map<String, String> errors = new HashMap<>();
             FarmersPayResponse payAccessResponse = new FarmersPayResponse();
             payAccessResponse.setResponseCode(FarmersPayResponseCode.INVALID_AUTH_TOKEN.label);
